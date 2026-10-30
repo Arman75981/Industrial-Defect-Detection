@@ -198,8 +198,8 @@ class AnomalyDetector:
         score_p99 = float(np.percentile(pixel_error, 99))
         
         # Localized score: micro-defect cluster energy on smoothed error map
-        # prevents thin cuts, scratches, or pinholes from getting diluted into background texture
-        score_localized = score_micro if self.category in ["leather", "tile"] else max(score_p99, score_micro)
+        # perfectly matches the calibrated localized_threshold from train_autoencoder.py
+        score_localized = score_micro
         active_score = score_localized if self.scoring_mode == "localized" else score_global
 
         is_anomaly = active_score >= self.threshold

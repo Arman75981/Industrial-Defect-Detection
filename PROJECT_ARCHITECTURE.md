@@ -234,7 +234,7 @@ $$\tau = \mu_{\text{val}} + 3 \cdot \sigma_{\text{val}}$$
 
 | Category | Type | Calibrated Localized Threshold ($\tau$) | Global Threshold | Normal Validation AUROC |
 | :--- | :--- | :--- | :--- | :--- |
-| **Screw** | Rigid Object | `0.0152` | `0.0012` | 91.2% |
+| **Screw** | Rigid Object | `0.0314` | `0.0009` | 52.8% (Clf Acc) |
 | **Bottle** | Rigid Object | `0.0240` | `0.0010` | 94.6% |
 | **Leather** | Surface Texture | `0.00385` | `0.0008` | 94.6% |
 | **Wood** | Surface Texture | `0.00900` | `0.0011` | 72.2% (Clf Acc) |
