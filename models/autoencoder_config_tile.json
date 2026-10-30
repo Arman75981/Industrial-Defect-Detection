@@ -1,0 +1,18 @@
+{
+    "model_type": "ConvAutoencoder",
+    "category": "tile",
+    "image_size": [
+        128,
+        128
+    ],
+    "in_channels": 3,
+    "threshold": 0.0475,
+    "global_threshold": 0.011777458596043289,
+    "localized_threshold": 0.0475,
+    "threshold_p98": 0.01056918129324913,
+    "val_score_mean": 0.008129454217851162,
+    "val_score_std": 0.0012160014593973756,
+    "best_val_loss": 0.008129454510552542,
+    "epochs_trained": 20,
+    "training_time_sec": 624.0771987438202
+}

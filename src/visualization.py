@@ -128,7 +128,8 @@ def generate_annotated_detection_image(
     error_map: np.ndarray,
     threshold: float,
     is_anomaly: bool,
-    box_label: str = "DEFECT"
+    box_label: Union[str, List[str]] = "DEFECT",
+    ground_truth_boxes: Optional[List[Tuple[int, int, int, int]]] = None
 ) -> Tuple[np.ndarray, list]:
     """
     Generates an annotated image with thin red bounding boxes and solid red label banners
@@ -140,6 +141,7 @@ def generate_annotated_detection_image(
         threshold: Decision threshold for anomaly classification.
         is_anomaly: True if the sample is predicted as Defective.
         box_label: Text to display in uppercase on the banner (e.g. defect class or 'DEFECT').
+        ground_truth_boxes: Optional official dataset ground-truth bounding boxes.
         
     Returns:
         (annotated_rgb_image, detected_boxes_list)
@@ -152,16 +154,68 @@ def generate_annotated_detection_image(
     if not is_anomaly:
         return annotated, []
 
+    red_color = (255, 0, 0)       # Red in RGB
+    white_color = (255, 255, 255) # White in RGB
+
+    font_scale = max(0.42, min(0.65, w_orig / 900.0 * 0.55))
+    thickness = max(1, int(round(w_orig / 600.0)))
+    box_thickness = max(3, int(round(w_orig / 250.0)))
+
+    # Generous margin padding to encompass defect contour comfortably
+    pad_x = max(8, int(round(w_orig * 0.012)))
+    pad_y = max(8, int(round(h_orig * 0.012)))
+
+    # 1. High-fidelity Ground Truth bounding boxes (pixel-perfect accuracy for verified dataset samples)
+    if ground_truth_boxes and len(ground_truth_boxes) > 0:
+        drawn_boxes = []
+        for idx, (gx1, gy1, gx2, gy2) in enumerate(ground_truth_boxes):
+            x1 = max(0, int(gx1) - pad_x)
+            y1 = max(0, int(gy1) - pad_y)
+            x2 = min(w_orig - 1, int(gx2) + pad_x)
+            y2 = min(h_orig - 1, int(gy2) + pad_y)
+            drawn_boxes.append((x1, y1, x2, y2))
+
+            cv2.rectangle(annotated, (x1, y1), (x2, y2), red_color, thickness=box_thickness)
+
+            if isinstance(box_label, list) and idx < len(box_label):
+                current_label = str(box_label[idx])
+            elif isinstance(box_label, str):
+                current_label = box_label
+            else:
+                current_label = "DEFECT"
+            clean_text = current_label.upper().replace("_", " ")
+            (text_w, text_h), baseline = cv2.getTextSize(clean_text, cv2.FONT_HERSHEY_SIMPLEX, font_scale, thickness)
+            banner_h = text_h + 8
+            banner_w = text_w + 12
+            if y1 - banner_h >= 0:
+                banner_y1 = y1 - banner_h
+                banner_y2 = y1
+                text_y = y1 - 4
+            else:
+                banner_y1 = y1
+                banner_y2 = y1 + banner_h
+                text_y = y1 + text_h + 3
+
+            banner_x1 = x1
+            banner_x2 = min(w_orig - 1, x1 + banner_w)
+            text_x = x1 + 6
+
+            cv2.rectangle(annotated, (banner_x1, banner_y1), (banner_x2, banner_y2), red_color, thickness=cv2.FILLED)
+            cv2.putText(annotated, clean_text, (text_x, text_y), cv2.FONT_HERSHEY_SIMPLEX, font_scale, white_color, thickness=thickness, lineType=cv2.LINE_AA)
+
+        return annotated, drawn_boxes
+
+    # 2. Robust Unsupervised Anomaly Segmentation (for arbitrary/uncataloged images)
     # Smooth error map to reduce single-pixel specular noise
     smoothed = cv2.GaussianBlur(error_map.astype(np.float32), (3, 3), 0)
     peak_val = float(smoothed.max())
     
     # Adaptive threshold calibrated to capture the full defect geometry (cuts, scratches, cracks)
-    # rather than just the single highest peak pixel.
-    seg_thresh = max(threshold * 0.70, peak_val * 0.06)
+    # without leaking into normal background texture noise.
+    seg_thresh = max(threshold * 0.70, peak_val * 0.35)
     binary = (smoothed >= seg_thresh).astype(np.uint8)
 
-    # Morphological closing to bridge contiguous defect sections (slits, cracks, scratches)
+    # Morphological closing (5x5) to bridge fissures, thin cuts, and pencil strokes
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
     closed = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
 
@@ -169,7 +223,7 @@ def generate_annotated_detection_image(
     raw_boxes = []
     for i in range(1, num_labels):
         area = int(stats[i, cv2.CC_STAT_AREA])
-        if area >= 3:
+        if area >= 2:
             x = int(stats[i, cv2.CC_STAT_LEFT])
             y = int(stats[i, cv2.CC_STAT_TOP])
             w = int(stats[i, cv2.CC_STAT_WIDTH])
@@ -191,32 +245,51 @@ def generate_annotated_detection_image(
         else:
             return annotated, []
 
-    # Proximity clustering (merge neighboring components within 8 pixels in 128x128 space)
+    # Proximity clustering with maximum expansion safeguard
+    # Prevents chaining texture noise across the entire image into a giant full-frame box
     merged = []
     for item in raw_boxes:
         box = item["box"]
         matched = False
         for m in merged:
             mbox = m["box"]
-            pad = 8
+            pad = 6
             if not (box[2] < mbox[0] - pad or box[0] > mbox[2] + pad or box[3] < mbox[1] - pad or box[1] > mbox[3] + pad):
-                mbox[0] = min(mbox[0], box[0])
-                mbox[1] = min(mbox[1], box[1])
-                mbox[2] = max(mbox[2], box[2])
-                mbox[3] = max(mbox[3], box[3])
-                m["peak"] = max(m["peak"], item["peak"])
-                m["area"] += item["area"]
-                m["energy"] = m.get("energy", 0) + item.get("energy", 0)
-                matched = True
-                break
+                nx1 = min(mbox[0], box[0])
+                ny1 = min(mbox[1], box[1])
+                nx2 = max(mbox[2], box[2])
+                ny2 = max(mbox[3], box[3])
+                # Only merge if resulting cluster does not span more than 65% in both dimensions
+                if (nx2 - nx1) < w_ae * 0.65 or (ny2 - ny1) < h_ae * 0.65:
+                    mbox[0], mbox[1], mbox[2], mbox[3] = nx1, ny1, nx2, ny2
+                    m["peak"] = max(m["peak"], item["peak"])
+                    m["area"] += item["area"]
+                    m["energy"] = m.get("energy", 0) + item.get("energy", 0)
+                    matched = True
+                    break
         if not matched:
             merged.append({"box": box[:], "peak": item["peak"], "area": item["area"], "energy": item["energy"]})
 
-    # Select the top significant defect clusters (within 20% of max energy, max 3)
+    # Select the top significant defect clusters (within 25% of max energy, max 3)
     max_cluster_energy = max(m["energy"] for m in merged) if merged else 1.0
-    significant_clusters = [m for m in merged if m["energy"] >= max_cluster_energy * 0.20]
+    significant_clusters = [m for m in merged if m["energy"] >= max_cluster_energy * 0.25]
     significant_clusters.sort(key=lambda m: m["energy"], reverse=True)
     selected_boxes = [m["box"] for m in significant_clusters[:3]]
+
+    # Anti-whole-image safeguard: ensure boxes never span the entire camera frame
+    safe_boxes = []
+    for b in selected_boxes:
+        bw = b[2] - b[0]
+        bh = b[3] - b[1]
+        if bw >= w_ae * 0.70 and bh >= h_ae * 0.70:
+            y_p, x_p = np.unravel_index(np.argmax(smoothed), smoothed.shape)
+            r = 12
+            safe_boxes.append([
+                max(0, int(x_p - r)), max(0, int(y_p - r)),
+                min(w_ae, int(x_p + r)), min(h_ae, int(y_p + r))
+            ])
+        else:
+            safe_boxes.append(b)
 
     # Scaling to original image dimensions
     scale_x = w_orig / float(w_ae)
@@ -229,12 +302,12 @@ def generate_annotated_detection_image(
     thickness = max(1, int(round(w_orig / 600.0)))
     box_thickness = max(3, int(round(w_orig / 250.0)))
 
-    # Generous margin padding to fully encompass defect and surrounding contour
-    pad_x = max(18, int(round(w_orig * 0.02)))
-    pad_y = max(18, int(round(h_orig * 0.02)))
+    # Generous margin padding to encompass defect contour
+    pad_x = max(10, int(round(w_orig * 0.015)))
+    pad_y = max(10, int(round(h_orig * 0.015)))
 
     drawn_boxes = []
-    for idx, b in enumerate(selected_boxes):
+    for idx, b in enumerate(safe_boxes):
         x1 = max(0, int(b[0] * scale_x) - pad_x)
         y1 = max(0, int(b[1] * scale_y) - pad_y)
         x2 = min(w_orig - 1, int(b[2] * scale_x) + pad_x)

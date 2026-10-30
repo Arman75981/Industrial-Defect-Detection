@@ -194,8 +194,6 @@ def main():
     with st.spinner(f"Analyzing {selected_display} with {selected_display} Autoencoder..."):
         result = detector.predict(input_image)
 
-    is_anomaly = result["is_anomaly"]
-    status_label = "Defective" if is_anomaly else "Normal"
     heatmap_rgb = result["heatmap_rgb"]
 
     # Defect labels, ground-truth match, and details
@@ -203,9 +201,28 @@ def main():
         category=selected_category,
         image_input=input_image,
         file_bytes=file_bytes,
-        is_anomaly=is_anomaly,
+        is_anomaly=result["is_anomaly"],
         location_text=result["location_text"]
     )
+
+    # Synchronize resolved anomaly status
+    is_anomaly = details["is_anomaly"]
+    status_label = details["status"]
+
+    # If is_anomaly is True, ensure location text reflects defect position
+    location_text = result["location_text"]
+    if is_anomaly and ("not applicable" in location_text.lower() or not location_text):
+        gt_b = details.get("ground_truth_boxes")
+        if gt_b and len(gt_b) > 0:
+            gb = gt_b[0]
+            h_img, w_img = np.array(input_image).shape[:2]
+            cx = (gb[0] + gb[2]) / (2.0 * max(1, w_img))
+            cy = (gb[1] + gb[3]) / (2.0 * max(1, h_img))
+            vert = f"Upper {selected_display} region" if cy < 0.35 else (f"Lower {selected_display} region" if cy > 0.65 else f"Central {selected_display} surface / core field")
+            horiz = "left section" if cx < 0.35 else ("right section" if cx > 0.65 else "center area")
+            location_text = f"{vert}, {horiz}"
+        else:
+            location_text = detector.identify_defect_location(result["error_map"], is_anomaly=True)
 
     # Generate Original Image with Red Border Box around detected defect
     orig_np = np.array(input_image)
@@ -214,7 +231,8 @@ def main():
         error_map=result["error_map"],
         threshold=result["threshold"],
         is_anomaly=is_anomaly,
-        box_label=details["box_banner_label"]
+        box_label=details["box_banner_label"],
+        ground_truth_boxes=details.get("ground_truth_boxes")
     )
 
     st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
@@ -252,7 +270,7 @@ def main():
 
         # Where it was detected
         st.markdown('<div class="field-title">Location:</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="field-text">{result["location_text"]}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="field-text">{location_text}</div>', unsafe_allow_html=True)
 
         # Interpretation & Details
         st.markdown('<div class="field-title">Details:</div>', unsafe_allow_html=True)

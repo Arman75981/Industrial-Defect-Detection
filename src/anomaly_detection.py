@@ -141,6 +141,20 @@ class AnomalyDetector:
                 vert = "Core / central aperture"
             else:
                 vert = "Lower outer rim"
+        elif cat == "tile":
+            if y_mean < 42:
+                vert = "Upper tile surface / top perimeter"
+            elif y_mean < 85:
+                vert = "Central tile surface / core field"
+            else:
+                vert = "Lower tile surface / bottom perimeter"
+        elif cat in ["carpet", "wood", "leather"]:
+            if y_mean < 42:
+                vert = f"Upper {cat} surface / top section"
+            elif y_mean < 85:
+                vert = f"Central {cat} surface / field"
+            else:
+                vert = f"Lower {cat} surface / bottom section"
         else:
             # Generic texture or object mapping
             if y_mean < 42:
@@ -164,19 +178,28 @@ class AnomalyDetector:
 
         # Pixel-wise error across color channels
         diff = (batch_in - batch_rec).squeeze(0)
-        pixel_error = torch.mean(diff ** 2, dim=0).cpu().numpy()
+        mse = torch.mean(diff ** 2, dim=0)
+
+        if self.category == "tile":
+            # Chromatic variance cleanly amplifies translucent oil drops and colored stains
+            # on neutral marble tile without elevating background gray marble noise
+            var_c = torch.var(diff, dim=0)
+            pixel_error = (mse + 6.0 * var_c).cpu().numpy()
+        else:
+            pixel_error = mse.cpu().numpy()
 
         # Gaussian smoothing to suppress sensor/grain noise and integrate localized flaw clusters
         smoothed_error = cv2.GaussianBlur(pixel_error.astype(np.float32), (5, 5), 0)
 
         # Dual scores
         score_global = float(pixel_error.mean())
-        score_micro = float(np.mean(np.sort(smoothed_error.flatten())[-32:]))
+        top_k = 16 if self.category == "tile" else 32
+        score_micro = float(np.mean(np.sort(smoothed_error.flatten())[-top_k:]))
         score_p99 = float(np.percentile(pixel_error, 99))
         
         # Localized score: micro-defect cluster energy on smoothed error map
         # prevents thin cuts, scratches, or pinholes from getting diluted into background texture
-        score_localized = max(score_p99, score_micro) if self.category != "leather" else score_micro
+        score_localized = score_micro if self.category in ["leather", "tile"] else max(score_p99, score_micro)
         active_score = score_localized if self.scoring_mode == "localized" else score_global
 
         is_anomaly = active_score >= self.threshold

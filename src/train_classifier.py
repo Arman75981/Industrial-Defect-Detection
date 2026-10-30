@@ -4,6 +4,7 @@ Trains on a stratified split of MVTec screw defect categories,
 tracks accuracy and loss, and saves model checkpoints.
 """
 
+import os
 import sys
 import time
 import json
@@ -13,6 +14,9 @@ import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from sklearn.model_selection import train_test_split
+
+if not torch.cuda.is_available():
+    torch.set_num_threads(min(4, os.cpu_count() or 4))
 
 # Ensure project root is in python path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))

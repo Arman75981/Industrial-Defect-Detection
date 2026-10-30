@@ -5,11 +5,13 @@ computes validation-based anomaly thresholds, and saves model checkpoints.
 Supports any MVTec AD category (e.g., screw, bottle, wood, cable, etc.).
 """
 
+import os
 import sys
 import time
 import json
 import argparse
 from pathlib import Path
+import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
@@ -28,6 +30,8 @@ def set_seed(seed: int = 42):
     np.random.seed(seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
+    else:
+        torch.set_num_threads(min(4, os.cpu_count() or 4))
 
 def train_autoencoder(category: str = config.DEFAULT_CATEGORY,
                       epochs: int = config.EPOCHS, 
@@ -148,10 +152,12 @@ def train_autoencoder(category: str = config.DEFAULT_CATEGORY,
             image_scores = per_pixel_error.mean(dim=[1, 2, 3]).cpu().numpy()
             val_image_scores.extend(image_scores)
 
-            # Localized 99th percentile error per sample
+            # Localized error per sample using smoothed cluster energy
             diff_mean = torch.mean((inputs - outputs)**2, dim=1).cpu().numpy()
             for b in range(diff_mean.shape[0]):
-                val_localized_scores.append(float(np.percentile(diff_mean[b], 99)))
+                sm_b = cv2.GaussianBlur(diff_mean[b].astype(np.float32), (5, 5), 0)
+                score_micro = float(np.mean(np.sort(sm_b.flatten())[-32:]))
+                val_localized_scores.append(score_micro)
 
     val_image_scores = np.array(val_image_scores)
     val_localized_scores = np.array(val_localized_scores)

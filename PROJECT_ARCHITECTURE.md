@@ -235,9 +235,10 @@ $$\tau = \mu_{\text{val}} + 3 \cdot \sigma_{\text{val}}$$
 | Category | Type | Calibrated Localized Threshold ($\tau$) | Global Threshold | Normal Validation AUROC |
 | :--- | :--- | :--- | :--- | :--- |
 | **Screw** | Rigid Object | `0.0152` | `0.0012` | 91.2% |
-| **Bottle** | Rigid Object | `0.0180` | `0.0015` | 89.4% |
+| **Bottle** | Rigid Object | `0.0240` | `0.0010` | 94.6% |
 | **Leather** | Surface Texture | `0.00385` | `0.0008` | 94.6% |
-| **Wood** | Surface Texture | `0.00900` | `0.0011` | 88.7% |
+| **Wood** | Surface Texture | `0.00900` | `0.0011` | 72.2% (Clf Acc) |
+| **Tile** | Surface Texture | `0.0475` | `0.0118` | 92.3% (Clf Acc) |
 
 ### 4.5. Connected Component Bounding Box Extraction
 

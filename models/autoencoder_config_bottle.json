@@ -6,13 +6,13 @@
         128
     ],
     "in_channels": 3,
-    "threshold": 0.0180,
-    "global_threshold": 0.0021100985759403557,
-    "localized_threshold": 0.0180,
-    "threshold_p98": 0.0018453638767823577,
-    "val_score_mean": 0.001142915221862495,
-    "val_score_std": 0.0003223944513592869,
-    "best_val_loss": 0.0011429151345510036,
-    "epochs_trained": 10,
-    "training_time_sec": 277.7652645111084
+    "threshold": 0.0240,
+    "global_threshold": 0.0010180416284129024,
+    "localized_threshold": 0.0240,
+    "threshold_p98": 0.0009478412102907896,
+    "val_score_mean": 0.0006073894910514355,
+    "val_score_std": 0.00013688404578715563,
+    "best_val_loss": 0.0006073895201552659,
+    "epochs_trained": 25,
+    "training_time_sec": 578.3418345451355
 }
