@@ -1,0 +1,18 @@
+{
+    "model_type": "ConvAutoencoder",
+    "category": "wood",
+    "image_size": [
+        128,
+        128
+    ],
+    "in_channels": 3,
+    "threshold": 0.0090,
+    "global_threshold": 0.0024810615286696702,
+    "localized_threshold": 0.0090,
+    "threshold_p98": 0.0018903582822531462,
+    "val_score_mean": 0.0012986862566322088,
+    "val_score_std": 0.0003941250906791538,
+    "best_val_loss": 0.0012986863975560194,
+    "epochs_trained": 10,
+    "training_time_sec": 398.3073127269745
+}

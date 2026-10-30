@@ -1,0 +1,65 @@
+{
+    "dataset_category": "screw",
+    "total_test_samples": 160,
+    "normal_test_samples": 41,
+    "defect_test_samples": 119,
+    "active_threshold": 0.0152,
+    "image_level_auroc_localized_top1": 0.8030334084853454,
+    "image_level_auroc_global_mean": 0.6985037917606067,
+    "pixel_level_auroc": 0.9119646717228185,
+    "mean_defect_pixel_iou": 0.05957287469731047,
+    "precision": 0.9069767441860465,
+    "recall": 0.6554621848739496,
+    "f1_score": 0.7609756097560976,
+    "false_positive_rate_on_normal": 0.1951219512195122,
+    "confusion_matrix": {
+        "true_positive": 78,
+        "false_positive": 8,
+        "true_negative": 33,
+        "false_negative": 41
+    },
+    "per_category_breakdown": {
+        "good": {
+            "total_samples": 41,
+            "detected_as_anomaly": 8,
+            "detection_rate": 0.1951219512195122,
+            "mean_localized_score": 0.01358754092418566,
+            "mean_global_score": 0.0007315189265305312
+        },
+        "manipulated_front": {
+            "total_samples": 24,
+            "detected_as_anomaly": 11,
+            "detection_rate": 0.4583333333333333,
+            "mean_localized_score": 0.015642240410670638,
+            "mean_global_score": 0.0007833256992550256
+        },
+        "scratch_head": {
+            "total_samples": 24,
+            "detected_as_anomaly": 20,
+            "detection_rate": 0.8333333333333334,
+            "mean_localized_score": 0.01748035681278755,
+            "mean_global_score": 0.000838135116888831
+        },
+        "scratch_neck": {
+            "total_samples": 25,
+            "detected_as_anomaly": 17,
+            "detection_rate": 0.68,
+            "mean_localized_score": 0.017285141423344613,
+            "mean_global_score": 0.0008098384225741029
+        },
+        "thread_side": {
+            "total_samples": 23,
+            "detected_as_anomaly": 13,
+            "detection_rate": 0.5652173913043478,
+            "mean_localized_score": 0.015308386889164862,
+            "mean_global_score": 0.0007648194188495045
+        },
+        "thread_top": {
+            "total_samples": 23,
+            "detected_as_anomaly": 17,
+            "detection_rate": 0.7391304347826086,
+            "mean_localized_score": 0.01632961671313514,
+            "mean_global_score": 0.0008019133086275796
+        }
+    }
+}

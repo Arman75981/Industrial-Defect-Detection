@@ -1,0 +1,18 @@
+{
+    "model_type": "ConvAutoencoder",
+    "category": "bottle",
+    "image_size": [
+        128,
+        128
+    ],
+    "in_channels": 3,
+    "threshold": 0.0180,
+    "global_threshold": 0.0021100985759403557,
+    "localized_threshold": 0.0180,
+    "threshold_p98": 0.0018453638767823577,
+    "val_score_mean": 0.001142915221862495,
+    "val_score_std": 0.0003223944513592869,
+    "best_val_loss": 0.0011429151345510036,
+    "epochs_trained": 10,
+    "training_time_sec": 277.7652645111084
+}

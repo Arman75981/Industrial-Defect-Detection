@@ -1,0 +1,18 @@
+{
+    "model_type": "ConvAutoencoder",
+    "category": "leather",
+    "image_size": [
+        128,
+        128
+    ],
+    "in_channels": 3,
+    "threshold": 0.00365,
+    "global_threshold": 0.00042620479507604614,
+    "localized_threshold": 0.00365,
+    "threshold_p98": 0.0003766292647924274,
+    "val_score_mean": 0.0002583597379270941,
+    "val_score_std": 5.594835238298401e-05,
+    "best_val_loss": 0.00025835974736617426,
+    "epochs_trained": 10,
+    "training_time_sec": 258.5091562271118
+}

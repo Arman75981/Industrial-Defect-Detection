@@ -1,0 +1,347 @@
+{
+    "model_name": "ResNet-18 (Transfer Learning)",
+    "total_test_samples": 36,
+    "overall_accuracy": 0.5,
+    "macro_avg": {
+        "precision": 0.5144444444444445,
+        "recall": 0.5035714285714286,
+        "f1_score": 0.4876058152373942
+    },
+    "weighted_avg": {
+        "precision": 0.5168209876543209,
+        "recall": 0.5,
+        "f1_score": 0.4868817220790905
+    },
+    "confusion_matrix": [
+        [
+            5,
+            2,
+            0,
+            0,
+            0
+        ],
+        [
+            0,
+            5,
+            1,
+            0,
+            1
+        ],
+        [
+            0,
+            4,
+            3,
+            0,
+            1
+        ],
+        [
+            3,
+            1,
+            0,
+            2,
+            1
+        ],
+        [
+            1,
+            0,
+            1,
+            2,
+            3
+        ]
+    ],
+    "classes": [
+        "manipulated_front",
+        "scratch_head",
+        "scratch_neck",
+        "thread_side",
+        "thread_top"
+    ],
+    "per_class_metrics": {
+        "manipulated_front": {
+            "precision": 0.5555555555555556,
+            "recall": 0.7142857142857143,
+            "f1_score": 0.625,
+            "support": 7
+        },
+        "scratch_head": {
+            "precision": 0.4166666666666667,
+            "recall": 0.7142857142857143,
+            "f1_score": 0.5263157894736842,
+            "support": 7
+        },
+        "scratch_neck": {
+            "precision": 0.6,
+            "recall": 0.375,
+            "f1_score": 0.46153846153846156,
+            "support": 8
+        },
+        "thread_side": {
+            "precision": 0.5,
+            "recall": 0.2857142857142857,
+            "f1_score": 0.36363636363636365,
+            "support": 7
+        },
+        "thread_top": {
+            "precision": 0.5,
+            "recall": 0.42857142857142855,
+            "f1_score": 0.46153846153846156,
+            "support": 7
+        }
+    },
+    "misclassified_samples": [
+        {
+            "file": "009.png",
+            "path": "C:\\Users\\idris\\Downloads\\mvtec_anomaly_detection\\screw\\test\\scratch_head\\009.png",
+            "actual_label": "scratch_head",
+            "predicted_label": "thread_top",
+            "confidence": 0.7264993786811829,
+            "probabilities": {
+                "manipulated_front": 0.015366560779511929,
+                "scratch_head": 0.1282130479812622,
+                "scratch_neck": 0.11415591090917587,
+                "thread_side": 0.01576509140431881,
+                "thread_top": 0.7264993786811829
+            }
+        },
+        {
+            "file": "019.png",
+            "path": "C:\\Users\\idris\\Downloads\\mvtec_anomaly_detection\\screw\\test\\manipulated_front\\019.png",
+            "actual_label": "manipulated_front",
+            "predicted_label": "scratch_head",
+            "confidence": 0.4341893196105957,
+            "probabilities": {
+                "manipulated_front": 0.3084273934364319,
+                "scratch_head": 0.4341893196105957,
+                "scratch_neck": 0.006315405014902353,
+                "thread_side": 0.24735623598098755,
+                "thread_top": 0.0037116329185664654
+            }
+        },
+        {
+            "file": "006.png",
+            "path": "C:\\Users\\idris\\Downloads\\mvtec_anomaly_detection\\screw\\test\\scratch_neck\\006.png",
+            "actual_label": "scratch_neck",
+            "predicted_label": "thread_top",
+            "confidence": 0.7125623822212219,
+            "probabilities": {
+                "manipulated_front": 0.0020863062236458063,
+                "scratch_head": 0.007692276034504175,
+                "scratch_neck": 0.2754155695438385,
+                "thread_side": 0.0022433982230722904,
+                "thread_top": 0.7125623822212219
+            }
+        },
+        {
+            "file": "014.png",
+            "path": "C:\\Users\\idris\\Downloads\\mvtec_anomaly_detection\\screw\\test\\thread_top\\014.png",
+            "actual_label": "thread_top",
+            "predicted_label": "scratch_neck",
+            "confidence": 0.9907755255699158,
+            "probabilities": {
+                "manipulated_front": 0.00010039353219326586,
+                "scratch_head": 0.004235409200191498,
+                "scratch_neck": 0.9907755255699158,
+                "thread_side": 0.0005400360096246004,
+                "thread_top": 0.004348622169345617
+            }
+        },
+        {
+            "file": "013.png",
+            "path": "C:\\Users\\idris\\Downloads\\mvtec_anomaly_detection\\screw\\test\\scratch_neck\\013.png",
+            "actual_label": "scratch_neck",
+            "predicted_label": "scratch_head",
+            "confidence": 0.9748584032058716,
+            "probabilities": {
+                "manipulated_front": 5.174101534066722e-05,
+                "scratch_head": 0.9748584032058716,
+                "scratch_neck": 0.023088010028004646,
+                "thread_side": 0.0019745409954339266,
+                "thread_top": 2.7354853955330327e-05
+            }
+        },
+        {
+            "file": "020.png",
+            "path": "C:\\Users\\idris\\Downloads\\mvtec_anomaly_detection\\screw\\test\\scratch_neck\\020.png",
+            "actual_label": "scratch_neck",
+            "predicted_label": "scratch_head",
+            "confidence": 0.702717661857605,
+            "probabilities": {
+                "manipulated_front": 0.002043090295046568,
+                "scratch_head": 0.702717661857605,
+                "scratch_neck": 0.28283825516700745,
+                "thread_side": 0.010728707537055016,
+                "thread_top": 0.0016722162254154682
+            }
+        },
+        {
+            "file": "014.png",
+            "path": "C:\\Users\\idris\\Downloads\\mvtec_anomaly_detection\\screw\\test\\scratch_neck\\014.png",
+            "actual_label": "scratch_neck",
+            "predicted_label": "scratch_head",
+            "confidence": 0.9043071269989014,
+            "probabilities": {
+                "manipulated_front": 0.017025334760546684,
+                "scratch_head": 0.9043071269989014,
+                "scratch_neck": 0.06641411781311035,
+                "thread_side": 0.0020943705458194017,
+                "thread_top": 0.010159033350646496
+            }
+        },
+        {
+            "file": "009.png",
+            "path": "C:\\Users\\idris\\Downloads\\mvtec_anomaly_detection\\screw\\test\\thread_side\\009.png",
+            "actual_label": "thread_side",
+            "predicted_label": "scratch_head",
+            "confidence": 0.345499187707901,
+            "probabilities": {
+                "manipulated_front": 0.3211412727832794,
+                "scratch_head": 0.345499187707901,
+                "scratch_neck": 0.03609894588589668,
+                "thread_side": 0.2941952347755432,
+                "thread_top": 0.003065344877541065
+            }
+        },
+        {
+            "file": "006.png",
+            "path": "C:\\Users\\idris\\Downloads\\mvtec_anomaly_detection\\screw\\test\\thread_top\\006.png",
+            "actual_label": "thread_top",
+            "predicted_label": "thread_side",
+            "confidence": 0.9720786213874817,
+            "probabilities": {
+                "manipulated_front": 0.016026727855205536,
+                "scratch_head": 0.0006244633113965392,
+                "scratch_neck": 0.0004523584502749145,
+                "thread_side": 0.9720786213874817,
+                "thread_top": 0.010817809961736202
+            }
+        },
+        {
+            "file": "014.png",
+            "path": "C:\\Users\\idris\\Downloads\\mvtec_anomaly_detection\\screw\\test\\scratch_head\\014.png",
+            "actual_label": "scratch_head",
+            "predicted_label": "scratch_neck",
+            "confidence": 0.8608039021492004,
+            "probabilities": {
+                "manipulated_front": 0.0010328906355425715,
+                "scratch_head": 0.125824436545372,
+                "scratch_neck": 0.8608039021492004,
+                "thread_side": 0.005821052938699722,
+                "thread_top": 0.006517622619867325
+            }
+        },
+        {
+            "file": "017.png",
+            "path": "C:\\Users\\idris\\Downloads\\mvtec_anomaly_detection\\screw\\test\\thread_side\\017.png",
+            "actual_label": "thread_side",
+            "predicted_label": "thread_top",
+            "confidence": 0.612320601940155,
+            "probabilities": {
+                "manipulated_front": 0.008428558707237244,
+                "scratch_head": 0.0077425832860171795,
+                "scratch_neck": 0.36574530601501465,
+                "thread_side": 0.005762953776866198,
+                "thread_top": 0.612320601940155
+            }
+        },
+        {
+            "file": "008.png",
+            "path": "C:\\Users\\idris\\Downloads\\mvtec_anomaly_detection\\screw\\test\\scratch_neck\\008.png",
+            "actual_label": "scratch_neck",
+            "predicted_label": "scratch_head",
+            "confidence": 0.9748016595840454,
+            "probabilities": {
+                "manipulated_front": 0.0017909853486344218,
+                "scratch_head": 0.9748016595840454,
+                "scratch_neck": 0.009196266531944275,
+                "thread_side": 0.01405400037765503,
+                "thread_top": 0.00015711993910372257
+            }
+        },
+        {
+            "file": "013.png",
+            "path": "C:\\Users\\idris\\Downloads\\mvtec_anomaly_detection\\screw\\test\\thread_side\\013.png",
+            "actual_label": "thread_side",
+            "predicted_label": "manipulated_front",
+            "confidence": 0.9724491834640503,
+            "probabilities": {
+                "manipulated_front": 0.9724491834640503,
+                "scratch_head": 0.0023365458473563194,
+                "scratch_neck": 0.008390221744775772,
+                "thread_side": 0.007101957220584154,
+                "thread_top": 0.009722186252474785
+            }
+        },
+        {
+            "file": "015.png",
+            "path": "C:\\Users\\idris\\Downloads\\mvtec_anomaly_detection\\screw\\test\\thread_side\\015.png",
+            "actual_label": "thread_side",
+            "predicted_label": "manipulated_front",
+            "confidence": 0.8998228907585144,
+            "probabilities": {
+                "manipulated_front": 0.8998228907585144,
+                "scratch_head": 0.0512608140707016,
+                "scratch_neck": 0.0073094055987894535,
+                "thread_side": 0.02074320986866951,
+                "thread_top": 0.020863691344857216
+            }
+        },
+        {
+            "file": "011.png",
+            "path": "C:\\Users\\idris\\Downloads\\mvtec_anomaly_detection\\screw\\test\\thread_side\\011.png",
+            "actual_label": "thread_side",
+            "predicted_label": "manipulated_front",
+            "confidence": 0.5372911095619202,
+            "probabilities": {
+                "manipulated_front": 0.5372911095619202,
+                "scratch_head": 0.21906544268131256,
+                "scratch_neck": 0.03513715788722038,
+                "thread_side": 0.07886302471160889,
+                "thread_top": 0.12964333593845367
+            }
+        },
+        {
+            "file": "021.png",
+            "path": "C:\\Users\\idris\\Downloads\\mvtec_anomaly_detection\\screw\\test\\thread_top\\021.png",
+            "actual_label": "thread_top",
+            "predicted_label": "thread_side",
+            "confidence": 0.3855617046356201,
+            "probabilities": {
+                "manipulated_front": 0.01671726070344448,
+                "scratch_head": 0.3659217953681946,
+                "scratch_neck": 0.22501982748508453,
+                "thread_side": 0.3855617046356201,
+                "thread_top": 0.00677942018955946
+            }
+        },
+        {
+            "file": "022.png",
+            "path": "C:\\Users\\idris\\Downloads\\mvtec_anomaly_detection\\screw\\test\\thread_top\\022.png",
+            "actual_label": "thread_top",
+            "predicted_label": "manipulated_front",
+            "confidence": 0.947603702545166,
+            "probabilities": {
+                "manipulated_front": 0.947603702545166,
+                "scratch_head": 0.03198516368865967,
+                "scratch_neck": 0.007779673207551241,
+                "thread_side": 0.0092892711982131,
+                "thread_top": 0.0033420936670154333
+            }
+        },
+        {
+            "file": "018.png",
+            "path": "C:\\Users\\idris\\Downloads\\mvtec_anomaly_detection\\screw\\test\\manipulated_front\\018.png",
+            "actual_label": "manipulated_front",
+            "predicted_label": "scratch_head",
+            "confidence": 0.8904138803482056,
+            "probabilities": {
+                "manipulated_front": 0.01696806028485298,
+                "scratch_head": 0.8904138803482056,
+                "scratch_neck": 0.01682572066783905,
+                "thread_side": 0.07387319952249527,
+                "thread_top": 0.0019192051840946078
+            }
+        }
+    ],
+    "correct_samples_count": 18,
+    "misclassified_count": 18
+}

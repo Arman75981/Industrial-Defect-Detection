@@ -1,0 +1,18 @@
+{
+    "model_type": "ConvAutoencoder",
+    "category": "screw",
+    "image_size": [
+        128,
+        128
+    ],
+    "in_channels": 3,
+    "threshold": 0.0152,
+    "global_threshold": 0.0011384326935512945,
+    "localized_threshold": 0.0152,
+    "threshold_p98": 0.0010556248016655445,
+    "val_score_mean": 0.0007883231737650931,
+    "val_score_std": 0.00011670317326206714,
+    "best_val_loss": 0.0007883232416740308,
+    "epochs_trained": 15,
+    "training_time_sec": 432.14580965042114
+}
