@@ -30,11 +30,11 @@ from src.anomaly_detection import AnomalyDetector
 from src.visualization import generate_annotated_detection_image
 from src.label_manager import resolve_labels_and_details
 
-# Page configuration - Minimalist clean layout
+# Page configuration - Clean wide layout for 5-stage pipeline
 st.set_page_config(
     page_title="Industrial Defect Detection",
     page_icon="⚙️",
-    layout="centered",
+    layout="wide",
     initial_sidebar_state="collapsed"
 )
 
@@ -46,70 +46,96 @@ st.markdown("""
     header {visibility: hidden;}
 
     .app-title {
-        font-size: 2.1rem;
+        font-size: 2.2rem;
         font-weight: 700;
         color: #0f172a;
         text-align: center;
-        margin-top: 0.5rem;
-        margin-bottom: 0.3rem;
+        margin-top: 0.2rem;
+        margin-bottom: 0.2rem;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     }
     .app-subtitle {
-        font-size: 0.98rem;
+        font-size: 1.0rem;
         color: #64748b;
         text-align: center;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.2rem;
     }
     .output-card {
         background-color: #ffffff;
         border: 1px solid #e2e8f0;
         border-radius: 12px;
-        padding: 20px;
+        padding: 14px;
         box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
         height: 100%;
+        display: flex;
+        flex-direction: column;
     }
     .card-header {
-        font-size: 1.15rem;
+        font-size: 1.02rem;
         font-weight: 600;
         color: #1e293b;
-        margin-bottom: 14px;
+        margin-bottom: 10px;
         border-bottom: 1px solid #f1f5f9;
-        padding-bottom: 8px;
+        padding-bottom: 6px;
+        text-align: center;
+    }
+    .summary-card {
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 20px 24px;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+        margin-top: 20px;
     }
     .badge-defective {
         display: inline-block;
         background-color: #fee2e2;
         color: #b91c1c;
         font-weight: 700;
-        font-size: 1.25rem;
-        padding: 6px 16px;
+        font-size: 1.15rem;
+        padding: 5px 14px;
         border-radius: 8px;
         border: 1px solid #fecaca;
-        margin-bottom: 16px;
+        margin-top: 6px;
+        margin-bottom: 8px;
+        text-align: center;
     }
     .badge-normal {
         display: inline-block;
         background-color: #dcfce7;
         color: #15803d;
         font-weight: 700;
-        font-size: 1.25rem;
-        padding: 6px 16px;
+        font-size: 1.15rem;
+        padding: 5px 14px;
         border-radius: 8px;
         border: 1px solid #bbf7d0;
-        margin-bottom: 16px;
+        margin-top: 6px;
+        margin-bottom: 8px;
+        text-align: center;
     }
     .field-title {
         font-weight: 600;
         color: #334155;
-        margin-top: 10px;
+        margin-top: 8px;
         margin-bottom: 2px;
-        font-size: 0.93rem;
+        font-size: 0.90rem;
     }
     .field-text {
         color: #475569;
-        font-size: 0.92rem;
+        font-size: 0.88rem;
         line-height: 1.45;
-        margin-bottom: 12px;
+        margin-bottom: 8px;
+    }
+    .meta-tag {
+        display: inline-block;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 2px 7px;
+        border-radius: 5px;
+        margin-top: 4px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -235,48 +261,153 @@ def main():
         ground_truth_boxes=details.get("ground_truth_boxes")
     )
 
-    st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-top: 14px;'></div>", unsafe_allow_html=True)
 
-    # Exactly Two Output Cards Side-by-Side
-    col_heatmap, col_label = st.columns(2)
+    # Display View Option Header
+    col_view_title, col_view_toggle = st.columns([3, 1])
+    with col_view_title:
+        st.markdown("<div style='font-size: 1.15rem; font-weight: 700; color: #1e293b; margin-top: 4px;'>Autoencoder Inspection Pipeline (5 Visual Stages)</div>", unsafe_allow_html=True)
+    with col_view_toggle:
+        view_mode = st.radio(
+            "View Mode",
+            options=["5 Columns (Panoramic)", "2 Rows (Stacked)"],
+            index=0,
+            horizontal=True,
+            label_visibility="collapsed"
+        )
 
-    # Output 1: Anomaly Heatmap
-    with col_heatmap:
-        st.markdown('<div class="output-card">', unsafe_allow_html=True)
-        st.markdown('<div class="card-header">Output 1 — Anomaly Heatmap</div>', unsafe_allow_html=True)
-        st.image(heatmap_rgb, use_container_width=True)
-        st.caption(f"Localized reconstruction anomaly heatmap for {selected_display}.")
-        st.markdown('</div>', unsafe_allow_html=True)
+    if view_mode == "5 Columns (Panoramic)":
+        # 5 Sequential Visual Outputs in One Panoramic Row
+        col1, col2, col3, col4, col5 = st.columns(5)
 
-    # Output 2: Defect in Original Image
-    with col_label:
-        st.markdown('<div class="output-card">', unsafe_allow_html=True)
-        st.markdown('<div class="card-header">Output 2 — Defect in Original Image</div>', unsafe_allow_html=True)
-        
-        # Original Image with Red Border Box around Defect
-        st.image(annotated_img, use_container_width=True)
-        if is_anomaly:
-            st.caption(f"Defect highlighted in red border box ({details['box_banner_label']}).")
-        else:
-            st.caption("Pristine component — no anomalous regions detected.")
+        # Output 1: Original Image
+        with col1:
+            st.markdown('<div class="output-card">', unsafe_allow_html=True)
+            st.markdown('<div class="card-header">Output 1 — Original Image</div>', unsafe_allow_html=True)
+            st.image(input_image, use_container_width=True)
+            st.caption("Uploaded input sample for inspection.")
+            st.markdown('<div class="meta-tag">Input (3 × 128 × 128)</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
-        # Status Badge
+        # Output 2: Encoder Output
+        with col2:
+            st.markdown('<div class="output-card">', unsafe_allow_html=True)
+            st.markdown('<div class="card-header">Output 2 — Encoder Output</div>', unsafe_allow_html=True)
+            st.image(result["encoder_rgb"], use_container_width=True)
+            st.caption("Compressed latent bottleneck representation.")
+            st.markdown('<div class="meta-tag">Latent Space (64 × 8 × 8)</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        # Output 3: Decoder Output
+        with col3:
+            st.markdown('<div class="output-card">', unsafe_allow_html=True)
+            st.markdown('<div class="card-header">Output 3 — Decoder Output</div>', unsafe_allow_html=True)
+            st.image(result["reconstructed_rgb"], use_container_width=True)
+            st.caption("Reconstructed pristine normal baseline.")
+            st.markdown('<div class="meta-tag">Reconstruction D(z)</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        # Output 4: Anomaly Heatmap
+        with col4:
+            st.markdown('<div class="output-card">', unsafe_allow_html=True)
+            st.markdown('<div class="card-header">Output 4 — Anomaly Heatmap</div>', unsafe_allow_html=True)
+            st.image(heatmap_rgb, use_container_width=True)
+            st.caption(f"Localized error heatmap for {selected_display}.")
+            st.markdown(f'<div class="meta-tag">Score: {result["score"]:.4f}</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        # Output 5: Defect in Original Image
+        with col5:
+            st.markdown('<div class="output-card">', unsafe_allow_html=True)
+            st.markdown('<div class="card-header">Output 5 — Defect in Image</div>', unsafe_allow_html=True)
+            st.image(annotated_img, use_container_width=True)
+            if is_anomaly:
+                st.caption(f"Defect bordered in red ({details['box_banner_label']}).")
+            else:
+                st.caption("Pristine component — no anomaly.")
+            badge_class = "badge-defective" if is_anomaly else "badge-normal"
+            st.markdown(f'<div style="text-align: center;"><span class="{badge_class}">{status_label}</span></div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+    else:
+        # 2 Rows (Stacked Autoencoder & Inspection Decision)
+        st.markdown("<div style='font-size: 0.95rem; font-weight: 600; color: #475569; margin-bottom: 8px;'>Stage A: Autoencoder Latent Compression & Reconstruction Flow</div>", unsafe_allow_html=True)
+        row1_col1, row1_col2, row1_col3 = st.columns(3)
+
+        with row1_col1:
+            st.markdown('<div class="output-card">', unsafe_allow_html=True)
+            st.markdown('<div class="card-header">Output 1 — Original Image</div>', unsafe_allow_html=True)
+            st.image(input_image, use_container_width=True)
+            st.caption("Uploaded input sample for inspection.")
+            st.markdown('<div class="meta-tag">Input Tensor (3 × 128 × 128)</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        with row1_col2:
+            st.markdown('<div class="output-card">', unsafe_allow_html=True)
+            st.markdown('<div class="card-header">Output 2 — Encoder Output</div>', unsafe_allow_html=True)
+            st.image(result["encoder_rgb"], use_container_width=True)
+            st.caption("Compressed latent bottleneck representation.")
+            st.markdown('<div class="meta-tag">Latent Space (64 × 8 × 8)</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        with row1_col3:
+            st.markdown('<div class="output-card">', unsafe_allow_html=True)
+            st.markdown('<div class="card-header">Output 3 — Decoder Output</div>', unsafe_allow_html=True)
+            st.image(result["reconstructed_rgb"], use_container_width=True)
+            st.caption("Reconstructed pristine normal baseline.")
+            st.markdown('<div class="meta-tag">Reconstruction D(z) (3 × 128 × 128)</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        st.markdown("<div style='margin-top: 14px;'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='font-size: 0.95rem; font-weight: 600; color: #475569; margin-bottom: 8px;'>Stage B: Reconstruction Anomaly Localization & Defect Detection</div>", unsafe_allow_html=True)
+        row2_col1, row2_col2 = st.columns(2)
+
+        with row2_col1:
+            st.markdown('<div class="output-card">', unsafe_allow_html=True)
+            st.markdown('<div class="card-header">Output 4 — Anomaly Heatmap</div>', unsafe_allow_html=True)
+            st.image(heatmap_rgb, use_container_width=True)
+            st.caption(f"Localized reconstruction anomaly heatmap for {selected_display}.")
+            st.markdown(f'<div class="meta-tag">Anomaly Score: {result["score"]:.4f}</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        with row2_col2:
+            st.markdown('<div class="output-card">', unsafe_allow_html=True)
+            st.markdown('<div class="card-header">Output 5 — Defect in Original Image</div>', unsafe_allow_html=True)
+            st.image(annotated_img, use_container_width=True)
+            if is_anomaly:
+                st.caption(f"Defect bordered in red ({details['box_banner_label']}).")
+            else:
+                st.caption("Pristine component — no anomaly.")
+            badge_class = "badge-defective" if is_anomaly else "badge-normal"
+            st.markdown(f'<div style="text-align: center;"><span class="{badge_class}">{status_label}</span></div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+    # Detailed Inspection Verdict & Diagnostics Section
+    st.markdown('<div class="summary-card">', unsafe_allow_html=True)
+    st.markdown('<div style="font-size: 1.22rem; font-weight: 700; color: #0f172a; margin-bottom: 12px;">Quality Inspection Decision & Diagnostics Report</div>', unsafe_allow_html=True)
+
+    col_verdict, col_class, col_loc, col_thresh = st.columns([1.2, 1.5, 1.8, 1.2])
+
+    with col_verdict:
+        st.markdown('<div class="field-title">Overall Verdict:</div>', unsafe_allow_html=True)
         badge_class = "badge-defective" if is_anomaly else "badge-normal"
         st.markdown(f'<div class="{badge_class}">{status_label}</div>', unsafe_allow_html=True)
 
-        # What was detected
-        st.markdown('<div class="field-title">Detection:</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="field-text">{details["detected_label"]}</div>', unsafe_allow_html=True)
+    with col_class:
+        st.markdown('<div class="field-title">Defect Classification:</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="field-text" style="font-weight: 600; color: #1e293b;">{details["detected_label"]}</div>', unsafe_allow_html=True)
 
-        # Where it was detected
-        st.markdown('<div class="field-title">Location:</div>', unsafe_allow_html=True)
+    with col_loc:
+        st.markdown('<div class="field-title">Identified Location:</div>', unsafe_allow_html=True)
         st.markdown(f'<div class="field-text">{location_text}</div>', unsafe_allow_html=True)
 
-        # Interpretation & Details
-        st.markdown('<div class="field-title">Details:</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="field-text">{details["detection_details"]}</div>', unsafe_allow_html=True)
+    with col_thresh:
+        st.markdown('<div class="field-title">Anomaly vs Threshold:</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="field-text">Score: <b>{result["score"]:.4f}</b><br>Threshold: <b>{result["threshold"]:.4f}</b></div>', unsafe_allow_html=True)
 
-        st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('<div class="field-title" style="margin-top: 10px;">Diagnostic Details & Physical Interpretation:</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="field-text" style="font-size: 0.92rem; color: #334155;">{details["detection_details"]}</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()

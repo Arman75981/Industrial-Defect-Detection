@@ -174,7 +174,20 @@ class AnomalyDetector:
         batch_in = tensor_in.unsqueeze(0).to(self.device)
 
         with torch.no_grad():
-            batch_rec = self.model(batch_in)
+            latent = self.model.encoder(batch_in)
+            bottleneck = self.model.bottleneck(latent)
+            batch_rec = self.model.decoder(bottleneck)
+
+        # Encoder latent feature representation (Output 2)
+        # Compute activation magnitude (L2 norm across 64 bottleneck channels)
+        encoder_energy = torch.norm(bottleneck.squeeze(0), dim=0).cpu().numpy()
+        norm_enc = (encoder_energy - encoder_energy.min()) / (encoder_energy.max() - encoder_energy.min() + 1e-8)
+        enc_smooth = cv2.resize(
+            (norm_enc * 255).astype(np.uint8),
+            (self.image_size[1], self.image_size[0]),
+            interpolation=cv2.INTER_CUBIC
+        )
+        encoder_rgb = cv2.cvtColor(cv2.applyColorMap(enc_smooth, cv2.COLORMAP_VIRIDIS), cv2.COLOR_BGR2RGB)
 
         # Pixel-wise error across color channels
         diff = (batch_in - batch_rec).squeeze(0)
@@ -239,6 +252,8 @@ class AnomalyDetector:
             "location_text": location_text,
             "explanation": explanation_text,
             "original_rgb": original_rgb,
+            "encoder_rgb": encoder_rgb,
+            "encoder_latent": bottleneck.squeeze(0).cpu().numpy(),
             "reconstructed_rgb": reconstructed_rgb,
             "error_map": pixel_error,
             "heatmap_rgb": heatmap_rgb,
