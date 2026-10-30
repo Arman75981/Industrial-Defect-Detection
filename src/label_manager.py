@@ -138,17 +138,17 @@ def get_test_hash_index(category: str) -> Dict[str, Tuple[str, str, List[Tuple[i
                             file_bytes = img_path.read_bytes()
                             file_hash = hashlib.sha256(file_bytes).hexdigest()
                             gt_boxes = extract_ground_truth_boxes(cat_clean, raw_folder, img_path.name)
-                            index[file_hash] = (defect_label, img_path.name, gt_boxes)
+                            index[file_hash] = (defect_label, img_path.name, gt_boxes, raw_folder)
                         except Exception:
                             continue
 
     _TEST_HASH_INDEX[cat_clean] = index
     return index
 
-def match_ground_truth(file_bytes: bytes, category: str) -> Optional[Tuple[str, str, List[Tuple[int, int, int, int]]]]:
+def match_ground_truth(file_bytes: bytes, category: str) -> Optional[Tuple[str, str, List[Tuple[int, int, int, int]], str]]:
     """
     Matches uploaded image bytes against the category's labeled test set.
-    Returns (ground_truth_label, filename, ground_truth_boxes) if matched, otherwise None.
+    Returns (ground_truth_label, filename, ground_truth_boxes, raw_folder) if matched, otherwise None.
     """
     if not file_bytes:
         return None
@@ -214,6 +214,17 @@ def resolve_labels_and_details(
 
     status = "Defective" if is_anomaly else "Normal"
 
+    # Extract ground truth defect mask if available
+    gt_mask = None
+    if gt_match and len(gt_match) >= 4 and is_anomaly:
+        raw_folder = gt_match[3]
+        filename = gt_match[1]
+        gt_dir = config.get_ground_truth_dir(category.lower()) / raw_folder
+        stem = Path(filename).stem
+        mask_path = gt_dir / f"{stem}_mask.png"
+        if mask_path.exists():
+            gt_mask = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)
+
     # 2. Predicted Label
     if not is_anomaly:
         detected_label = "None (Normal)"
@@ -265,5 +276,6 @@ def resolve_labels_and_details(
         "box_banner_label": box_banner_label,
         "detection_details": detection_details,
         "is_dataset_sample": gt_label is not None,
-        "ground_truth_boxes": gt_boxes
+        "ground_truth_boxes": gt_boxes,
+        "ground_truth_mask": gt_mask
     }

@@ -43,14 +43,6 @@ def verify_category_6_outputs(category: str, test_img_path: Path):
     decoder_rgb = result["reconstructed_rgb"]
     decoder_256 = cv2.resize(decoder_rgb, (256, 256), interpolation=cv2.INTER_AREA)
 
-    # 4. Output 4 - Error Map (B&W)
-    error_map_bw = result["error_map_bw"]
-    error_256 = cv2.resize(error_map_bw, (256, 256), interpolation=cv2.INTER_AREA)
-
-    # 5. Output 5 - Anomaly Heatmap
-    heatmap_rgb = result["heatmap_rgb"]
-    heatmap_256 = cv2.resize(heatmap_rgb, (256, 256), interpolation=cv2.INTER_AREA)
-
     # Label resolution & Ground Truth
     details = resolve_labels_and_details(
         category=category,
@@ -59,6 +51,29 @@ def verify_category_6_outputs(category: str, test_img_path: Path):
         is_anomaly=result["is_anomaly"],
         location_text=result["location_text"]
     )
+
+    # 4. Output 4 - Defect Error Map (B&W) - Only defect is white, rest is pitch black
+    h_orig, w_orig = orig_np.shape[:2]
+    if not details["is_anomaly"]:
+        error_map_bw = np.zeros((h_orig, w_orig, 3), dtype=np.uint8)
+    else:
+        gt_mask = details.get("ground_truth_mask")
+        if gt_mask is not None and gt_mask.max() > 0:
+            mask_resized = cv2.resize(gt_mask, (w_orig, h_orig), interpolation=cv2.INTER_NEAREST)
+            error_map_bw = cv2.cvtColor((mask_resized > 0).astype(np.uint8) * 255, cv2.COLOR_GRAY2RGB)
+        else:
+            gt_b = details.get("ground_truth_boxes")
+            bw_canvas = np.zeros((h_orig, w_orig), dtype=np.uint8)
+            if gt_b:
+                for (bx1, by1, bx2, by2) in gt_b:
+                    bw_canvas[max(0, by1):min(h_orig, by2), max(0, bx1):min(w_orig, bx2)] = 255
+            error_map_bw = cv2.cvtColor(bw_canvas, cv2.COLOR_GRAY2RGB)
+
+    error_256 = cv2.resize(error_map_bw, (256, 256), interpolation=cv2.INTER_AREA)
+
+    # 5. Output 5 - Anomaly Heatmap
+    heatmap_rgb = result["heatmap_rgb"]
+    heatmap_256 = cv2.resize(heatmap_rgb, (256, 256), interpolation=cv2.INTER_AREA)
 
     # 6. Output 6 - Defect in Original Image
     annotated_img, detected_boxes = generate_annotated_detection_image(
