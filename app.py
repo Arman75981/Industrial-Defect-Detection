@@ -266,19 +266,21 @@ def main():
     # Display View Option Header
     col_view_title, col_view_toggle = st.columns([3, 1])
     with col_view_title:
-        st.markdown("<div style='font-size: 1.15rem; font-weight: 700; color: #1e293b; margin-top: 4px;'>Autoencoder Inspection Pipeline (5 Visual Stages)</div>", unsafe_allow_html=True)
+        st.markdown("<div style='font-size: 1.15rem; font-weight: 700; color: #1e293b; margin-top: 4px;'>Autoencoder Inspection Pipeline (6 Visual Stages)</div>", unsafe_allow_html=True)
     with col_view_toggle:
         view_mode = st.radio(
             "View Mode",
-            options=["5 Columns (Panoramic)", "2 Rows (Stacked)"],
+            options=["6 Columns (Panoramic)", "2 Rows (Stacked)"],
             index=0,
             horizontal=True,
             label_visibility="collapsed"
         )
 
-    if view_mode == "5 Columns (Panoramic)":
-        # 5 Sequential Visual Outputs in One Panoramic Row
-        col1, col2, col3, col4, col5 = st.columns(5)
+    error_map_bw = result["error_map_bw"]
+
+    if view_mode == "6 Columns (Panoramic)":
+        # 6 Sequential Visual Outputs in One Panoramic Row
+        col1, col2, col3, col4, col5, col6 = st.columns(6)
 
         # Output 1: Original Image
         with col1:
@@ -307,19 +309,28 @@ def main():
             st.markdown('<div class="meta-tag">Reconstruction D(z)</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
 
-        # Output 4: Anomaly Heatmap
+        # Output 4: Error Map (B&W)
         with col4:
             st.markdown('<div class="output-card">', unsafe_allow_html=True)
-            st.markdown('<div class="card-header">Output 4 — Anomaly Heatmap</div>', unsafe_allow_html=True)
+            st.markdown('<div class="card-header">Output 4 — Error Map (B&W)</div>', unsafe_allow_html=True)
+            st.image(error_map_bw, use_container_width=True)
+            st.caption("Pixel-by-pixel difference |I - D(z)|².")
+            st.markdown('<div class="meta-tag">Residual Error (B&W)</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        # Output 5: Anomaly Heatmap
+        with col5:
+            st.markdown('<div class="output-card">', unsafe_allow_html=True)
+            st.markdown('<div class="card-header">Output 5 — Anomaly Heatmap</div>', unsafe_allow_html=True)
             st.image(heatmap_rgb, use_container_width=True)
             st.caption(f"Localized error heatmap for {selected_display}.")
             st.markdown(f'<div class="meta-tag">Score: {result["score"]:.4f}</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
 
-        # Output 5: Defect in Original Image
-        with col5:
+        # Output 6: Defect in Original Image
+        with col6:
             st.markdown('<div class="output-card">', unsafe_allow_html=True)
-            st.markdown('<div class="card-header">Output 5 — Defect in Image</div>', unsafe_allow_html=True)
+            st.markdown('<div class="card-header">Output 6 — Defect in Image</div>', unsafe_allow_html=True)
             st.image(annotated_img, use_container_width=True)
             if is_anomaly:
                 st.caption(f"Defect bordered in red ({details['box_banner_label']}).")
@@ -359,20 +370,28 @@ def main():
             st.markdown('</div>', unsafe_allow_html=True)
 
         st.markdown("<div style='margin-top: 14px;'></div>", unsafe_allow_html=True)
-        st.markdown("<div style='font-size: 0.95rem; font-weight: 600; color: #475569; margin-bottom: 8px;'>Stage B: Reconstruction Anomaly Localization & Defect Detection</div>", unsafe_allow_html=True)
-        row2_col1, row2_col2 = st.columns(2)
+        st.markdown("<div style='font-size: 0.95rem; font-weight: 600; color: #475569; margin-bottom: 8px;'>Stage B: Residual Error & Defect Localization Pipeline</div>", unsafe_allow_html=True)
+        row2_col1, row2_col2, row2_col3 = st.columns(3)
 
         with row2_col1:
             st.markdown('<div class="output-card">', unsafe_allow_html=True)
-            st.markdown('<div class="card-header">Output 4 — Anomaly Heatmap</div>', unsafe_allow_html=True)
+            st.markdown('<div class="card-header">Output 4 — Error Map (B&W)</div>', unsafe_allow_html=True)
+            st.image(error_map_bw, use_container_width=True)
+            st.caption("Pixel-by-pixel difference |I - D(z)|².")
+            st.markdown('<div class="meta-tag">Residual Error (B&W)</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        with row2_col2:
+            st.markdown('<div class="output-card">', unsafe_allow_html=True)
+            st.markdown('<div class="card-header">Output 5 — Anomaly Heatmap</div>', unsafe_allow_html=True)
             st.image(heatmap_rgb, use_container_width=True)
             st.caption(f"Localized reconstruction anomaly heatmap for {selected_display}.")
             st.markdown(f'<div class="meta-tag">Anomaly Score: {result["score"]:.4f}</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
 
-        with row2_col2:
+        with row2_col3:
             st.markdown('<div class="output-card">', unsafe_allow_html=True)
-            st.markdown('<div class="card-header">Output 5 — Defect in Original Image</div>', unsafe_allow_html=True)
+            st.markdown('<div class="card-header">Output 6 — Defect in Original Image</div>', unsafe_allow_html=True)
             st.image(annotated_img, use_container_width=True)
             if is_anomaly:
                 st.caption(f"Defect bordered in red ({details['box_banner_label']}).")

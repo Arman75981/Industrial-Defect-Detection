@@ -222,6 +222,7 @@ class AnomalyDetector:
         reconstructed_rgb = deprocess_image(batch_rec.squeeze(0))
 
         norm_map, heatmap_rgb = generate_heatmap(pixel_error, gaussian_blur_ksize=7)
+        error_map_bw = cv2.cvtColor(norm_map, cv2.COLOR_GRAY2RGB)
         overlay_rgb = create_heatmap_overlay(original_rgb, heatmap_rgb, alpha=0.55)
 
         location_text = self.identify_defect_location(pixel_error, is_anomaly)
@@ -256,6 +257,7 @@ class AnomalyDetector:
             "encoder_latent": bottleneck.squeeze(0).cpu().numpy(),
             "reconstructed_rgb": reconstructed_rgb,
             "error_map": pixel_error,
+            "error_map_bw": error_map_bw,
             "heatmap_rgb": heatmap_rgb,
             "overlay_rgb": overlay_rgb
         }
