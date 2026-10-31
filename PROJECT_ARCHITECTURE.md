@@ -41,8 +41,8 @@ This project addresses the challenge by implementing a **decoupled, dual-branch 
                                               │
                                               ▼
                                 ┌───────────────────────────┐
-                                │    Two-Output Streamlit   │
-                                │   Operator UI Dashboard   │
+                                │    6-Stage Streamlit      │
+                                │   Visual QC Dashboard     │
                                 └───────────────────────────┘
 ```
 
@@ -99,15 +99,19 @@ flowchart TD
         D1 -- No --> D6[src/label_manager.py<br/>Honest Fallback: ANOMALY]
     end
 
-    subgraph UI["5. Presentation Layer (app.py)"]
-        B4 --> E1[Output 1: Anomaly Heatmap<br/>OpenCV Jet Colormap + Blend Toggle]
-        C4 --> E2[Output 2: Defect Detection<br/>Original Image + Red Bounding Boxes]
-        C5 --> E2
-        D4 --> E2
-        D5 --> E2
-        D6 --> E2
-        B7 --> E2
-        B8 --> E2
+    subgraph UI["5. Presentation Layer (app.py) - 6-Stage Visual QC"]
+        A1 --> E1[Stage 01: Original Image<br/>Native Raw Inspection Sample]
+        B1 --> E2[Stage 02: Encoder Output<br/>Latent Bottleneck 8x8x64 Viridis]
+        B2 --> E3[Stage 03: Decoder Output<br/>Normal Baseline Reconstruction D z]
+        B3 --> E4[Stage 04: Defect Error Map<br/>B&W High-Contrast Binary Flaw Map]
+        B4 --> E5[Stage 05: Anomaly Heatmap<br/>OpenCV Jet Thermal Spectrum]
+        C4 --> E6[Stage 06: Defect in Original Image<br/>Precision Bounding Box & Defect Banner]
+        C5 --> E6
+        D4 --> E6
+        D5 --> E6
+        D6 --> E6
+        B7 --> E_METRICS[Diagnostic KPI Bar<br/>ACCEPTED / DEFECTIVE, Score vs tau, Flaw Location]
+        B8 --> E_METRICS
     end
 ```
 
@@ -268,12 +272,12 @@ flowchart LR
 
 ```text
 c:\Users\idris\OneDrive\Desktop\DL Project\
-├── app.py                          # Minimalist Streamlit Web Inspection Dashboard (Two-Output UI)
+├── app.py                          # 6-Stage Visual Quality Control Dashboard (Streamlit Web Interface)
 ├── config.py                       # Centralized configuration, dataset roots, thresholds, and hyperparameters
 ├── requirements.txt                # Python runtime dependencies (PyTorch CPU, OpenCV, Streamlit, etc.)
 ├── README.md                       # High-level overview and DL syllabus reference guide
 ├── PROJECT_ARCHITECTURE.md         # Complete system architecture documentation (This File)
-├── IMPLEMENTATION_REPORT.md        # Detailed engineering report on two-output UI & bounding boxes
+├── IMPLEMENTATION_REPORT.md        # Detailed engineering report on visual inspection pipeline & bounding boxes
 ├── EVALUATION.md                   # Full benchmark evaluation results and confusion matrices
 ├── PROJECT_PRESENTATION_CONTENT.md # Structured presentation slides and defense speaker notes
 │
@@ -304,9 +308,15 @@ c:\Users\idris\OneDrive\Desktop\DL Project\
 │   ├── autoencoder_config_bottle.json# Calibrated thresholds & metadata for Bottle
 │   ├── autoencoder_leather.pth     # Trained Autoencoder weights for Leather
 │   ├── autoencoder_config_leather.json# Calibrated thresholds & metadata for Leather
+│   ├── autoencoder_tile.pth        # Trained Autoencoder weights for Tile
+│   ├── autoencoder_config_tile.json# Calibrated thresholds & metadata for Tile
 │   ├── autoencoder_wood.pth        # Trained Autoencoder weights for Wood
 │   ├── autoencoder_config_wood.json# Calibrated thresholds & metadata for Wood
-│   └── resnet_classifier_screw.pth # Trained ResNet-18 weights for Screw defect classification
+│   ├── resnet_classifier_screw.pth # Trained ResNet-18 weights for Screw defect classification
+│   ├── resnet_classifier_bottle.pth# Trained ResNet-18 weights for Bottle defect classification
+│   ├── resnet_classifier_leather.pth# Trained ResNet-18 weights for Leather defect classification
+│   ├── resnet_classifier_tile.pth  # Trained ResNet-18 weights for Tile defect classification
+│   └── resnet_classifier_wood.pth  # Trained ResNet-18 weights for Wood defect classification
 │
 ├── outputs/                        # Inspection Outputs & Benchmark Artifacts
 │   ├── README.md                   # Artifact documentation
@@ -363,12 +373,17 @@ c:\Users\idris\OneDrive\Desktop\DL Project\
 * Exports multi-panel matplotlib figures for academic papers and project reports (`save_inspection_plot`).
 
 ### 6.7. Web Application Dashboard (`app.py`)
-* Streamlit web interface featuring clean, responsive styling.
-* Category dropdown selector (**Bottle**, **Leather**, **Screw**, **Wood**).
-* Drag-and-drop file uploader supporting PNG, JPG, and JPEG.
-* Exactly two synchronized output cards:
-  * **Output 1 — Anomaly Heatmap:** Jet colormap with an optional alpha-blend toggle.
-  * **Output 2 — Defect Detection:** Native image with tight red bounding boxes, status badge, defect classification, anatomical flaw region, and human-readable explanation.
+* **Academic & Engineering Focus:** Designed for college project presentation and technical defense with clean, professional styling (no proprietary/enterprise branding).
+* **Multi-Category Selection:** Supports 5 benchmark MVTec AD components (**Bottle**, **Leather**, **Screw**, **Tile**, **Wood**).
+* **Panoramic vs. Grid Layout Options:** Toggle between 6 panoramic horizontal columns and a 2×3 inspection grid.
+* **6 Sequential Visual Inspection Stages:**
+  * **Stage 01: Original Image:** Native uncompressed input sample with resolution tags.
+  * **Stage 02: Encoder Output:** Latent space feature energy map (Viridis colormap) visualizing compressed $8 \times 8 \times 64$ bottleneck activations.
+  * **Stage 03: Decoder Output:** Reconstructed pristine normal baseline $D(z)$ showing normal manifold projection.
+  * **Stage 04: Defect Error Map (B&W):** High-contrast binary flaw map where only the defective region is pure white and unaffected regions are pitch black.
+  * **Stage 05: Anomaly Heatmap:** OpenCV Jet thermal discrepancy spectrum highlighting localized reconstruction residual intensity.
+  * **Stage 06: Defect in Original Image:** Full-resolution overlay featuring tight red bounding boxes, defect classification banner, and physical flaw description.
+* **Diagnostic KPI Header:** Real-time summary tiles displaying Verdict (`ACCEPTED` vs `DEFECTIVE`), Defect Classification, Reconstruction Error MSE, Calibrated Threshold $\tau$, Anatomical Flaw Location, and Confidence.
 
 ---
 
@@ -398,17 +413,18 @@ sequenceDiagram
     Score->>Score: Compute 99th-percentile Localized Error
     Score-->>UI: Score = 0.0142 (Threshold tau = 0.00385) -> DEFECTIVE
 
-    par Parallel Visual Processing
-        UI->>Vis: Generate Jet Heatmap & Alpha Overlay
-        Vis-->>UI: Return Heatmap RGB (Output 1)
-    and Defect Extraction & Classification
-        UI->>Vis: Extract Connected Components & Red Bounding Boxes
-        Vis-->>UI: Return Annotated Native Image
+    par Parallel Visual Pipeline Generation
+        UI->>AE: Extract Bottleneck Latent Map (Stage 02)
+        UI->>AE: Extract Normal Baseline D(z) (Stage 03)
+        UI->>Vis: Render High-Contrast B&W Flaw Map (Stage 04)
+        UI->>Vis: Generate Jet Heatmap Spectrum (Stage 05)
+        UI->>Vis: Extract Connected Components & Red Bounding Boxes (Stage 06)
+    and Defect Classification
         UI->>ResNet: Query defect sub-type (if trained)
         ResNet-->>UI: Return label or "ANOMALY" fallback
     end
 
-    UI-->>Operator: Display Output 1 (Heatmap) & Output 2 (Annotated Image + Badges)
+    UI-->>Operator: Display 6 Sequential Inspection Stages & Diagnostic KPI Bar
 ```
 
 ---
