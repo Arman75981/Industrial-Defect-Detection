@@ -36,8 +36,8 @@ from src.label_manager import resolve_labels_and_details
 
 # Page configuration - Professional wide dashboard
 st.set_page_config(
-    page_title="AEGIS-QC | Industrial Defect Inspection",
-    page_icon="🛡️",
+    page_title="Visual Defect Detection | Quality Control",
+    page_icon="🔍",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -311,7 +311,7 @@ def main():
     st.markdown("""
     <div class="hero-banner">
         <div class="hero-title-group">
-            <h1>🛡️ AEGIS-QC <span style="font-size: 1.15rem; font-weight: 600; color: #a5b4fc; background: rgba(99, 102, 241, 0.15); padding: 4px 12px; border-radius: 8px; border: 1px solid rgba(165, 180, 252, 0.3);">Enterprise</span></h1>
+            <h1>🔍 Visual Defect Detection System <span style="font-size: 1.15rem; font-weight: 600; color: #a5b4fc; background: rgba(99, 102, 241, 0.15); padding: 4px 12px; border-radius: 8px; border: 1px solid rgba(165, 180, 252, 0.3);">Quality Control</span></h1>
             <p>Automated Visual Quality Control & Defect Detection — Deep Convolutional Autoencoder Architecture</p>
         </div>
         <div class="system-chip-group">
@@ -414,7 +414,7 @@ def main():
             return
 
     # 5. Run Deep Autoencoder Anomaly Detection Inference
-    with st.spinner(f"Running AEGIS-QC inference on {selected_display}..."):
+    with st.spinner(f"Running defect detection inference on {selected_display}..."):
         result = detector.predict(input_image)
 
     # 6. Resolve Ground Truth, Bounding Boxes, and Diagnostics
